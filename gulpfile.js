@@ -8,6 +8,7 @@ var
 	destclean = require( "gulp-dest-clean" ),
 	imacss = require( "gulp-imacss" ),
 	sass = require( "gulp-sass" ),
+	browsersync = require("browser-sync"),
 	htmlclean = require( "gulp-htmlclean" ),
 	preprocess = require( "gulp-preprocess" ),
 	pkg = require( "./package.json" );
@@ -52,6 +53,14 @@ var
 			version: pkg.version
 		}
 		// contexte: les choses qu'on envoie
+	},
+	syncOpts = {
+		server: {
+			baseDir: dest,
+			index: "index.html"
+		},
+		open: false,
+		notify: true
 	};
 
 // Définition des tâches
@@ -80,6 +89,7 @@ gulp.task( "sass", function() {
 	return gulp.src( css.in )
 		.pipe( sass( css.sassOpts ) )
 		.pipe( gulp.dest( css.out ) )
+		.pipe( browsersync.reload( { stream: true } ) );
 } );
 
 gulp.task( "html", function() {
@@ -96,9 +106,13 @@ gulp.task( "html", function() {
 	return page.pipe( gulp.dest( html.out ) );
 } );
 
+gulp.task( "browsersync", function() {
+	browsersync( syncOpts );
+} );
+
 // Tâche par défaut exécutée lorsqu'on tape juste gulp dans le terminal.
-gulp.task( "default", [ "images", "sass" ], function(  ) {
-	gulp.watch( html.watch, [ "html" ] );
+gulp.task( "default", [ "images", "sass", "html", "browsersync" ], function(  ) {
+	gulp.watch( html.watch, [ "html", browsersync.reload ] );
 	gulp.watch( imagesOpts.watch, [ "images" ] );
 	gulp.watch( css.watch, [ "sass" ] );
 } );
