@@ -7,10 +7,14 @@ var
 	del = require( "del" ),
 	destclean = require( "gulp-dest-clean" ),
 	imacss = require( "gulp-imacss" ),
-	sass = require( "gulp-sass" );
+	sass = require( "gulp-sass" ),
+	htmlclean = require( "gulp-htmlclean" ),
+	preprocess = require( "gulp-preprocess" ),
+	pkg = require( "./package.json" );
 
 // Définition de quelques variables générales pour notre gulpfile
 var
+	devBuild = ( (process.env.NODE_ENV || "development").trim().toLowerCase() !== 'production'),
 	source = 'sources/',
 	dest = 'build/';
 
@@ -33,10 +37,21 @@ var
 		watch: [ source + "scss/**/*" ],
 		out: dest + "css/",
 		sassOpts: {
-			outputStyle: "nested",
+			outputStyle: "expanded",
 			precision: 3, // nombre de valeurs derrière la virgule
 			errLogToConsole: true // pour que les erreurs s'affichent dans la console
 		}
+	},
+	html = {
+		in: source + "*.html",
+		watch: [source + "*.html", source + "template/**/*"],
+		out: dest,
+		context: {
+			devBuild: devBuild,
+			author: pkg.author,
+			version: pkg.version
+		}
+		// contexte: les choses qu'on envoie
 	};
 
 // Définition des tâches
@@ -67,7 +82,23 @@ gulp.task( "sass", function() {
 		.pipe( gulp.dest( css.out ) )
 } );
 
+gulp.task( "html", function() {
+	// résultat du premier traitement, à savoir les include et les valeurs des variables
+	var page =  gulp.src( html.in )
+		.pipe( preprocess( { context: html.context } ) );
+
+	if( !devBuild ) {
+		page = page
+			.pipe( size( {title: "HTML avant minification: "} ) )
+			.pipe( htmlclean() )
+			.pipe( size( {title: "HTML après minification: "} ) )
+	}
+	return page.pipe( gulp.dest( html.out ) );
+} );
+
 // Tâche par défaut exécutée lorsqu'on tape juste gulp dans le terminal.
-gulp.task( "default", [ "images" ], function(  ) {
+gulp.task( "default", [ "images", "sass" ], function(  ) {
+	gulp.watch( html.watch, [ "html" ] );
 	gulp.watch( imagesOpts.watch, [ "images" ] );
+	gulp.watch( css.watch, [ "sass" ] );
 } );
