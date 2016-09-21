@@ -20,7 +20,14 @@
   },
   "homepage": "https://github.com/AnneRemacle/discover-gulp#readme",
   "devDependencies": {
+    "del": "^2.2.2",
     "gulp": "^3.9.1",
-    "gulp-imagemin": "^3.0.3"
+    "gulp-dest-clean": "^0.5.0",
+    "gulp-imacss": "^1.0.0",
+    "gulp-imagemin": "^3.0.3",
+    "gulp-newer": "^1.2.0",
+    "gulp-sass": "^2.3.2",
+    "gulp-size": "^2.1.0",
+    "imacss": "^1.0.0"
   }
 }
